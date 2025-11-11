@@ -1,0 +1,45 @@
+{
+  "expo": {
+    "name": "Livraria",
+    "slug": "Livraria",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "livraria",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/images/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#121018"
+    },
+    "android": {
+      "package": "com.seuapp.livraria",
+      "permissions": [
+        "CAMERA",
+        "READ_MEDIA_IMAGES"
+      ]
+    },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Precisamos acessar suas fotos para escolher uma imagem de perfil.",
+          "cameraPermission": "Precisamos acessar sua câmera para tirar uma foto de perfil."
+        }
+      ],
+      "expo-router",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "usesCleartextTraffic": true
+          }
+        }
+      ]
+    ],
+    "extra": {
+      "SUPABASE_URL": "https://esgdonrrcixebouyjvbp.supabase.co",
+      "SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVzZ2RvbnJyY2l4ZWJvdXlqdmJwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MjM2NzYwNiwiZXhwIjoyMDc3OTQzNjA2fQ.ilJO9XOG7NpPsQMOFQk0GIDZlZtpVOkH8tROFJv7NU4"
+    }
+  }
+}
