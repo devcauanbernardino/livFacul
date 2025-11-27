@@ -113,10 +113,16 @@ const estilos = StyleSheet.create({
   },
 
   valor: {
-     color: CORES.text,
-     fontWeight: "700" 
-   },
-  barras: { flexDirection: "row", alignItems: "center", marginBottom: 10 },
+    color: CORES.text,
+    fontWeight: "700",
+  },
+
+  barras: { 
+    flexDirection: "row", 
+    alignItems: "center", 
+    marginBottom: 10 
+  },
+
   barra: {
     flex: 1,
     height: 5,
@@ -126,34 +132,42 @@ const estilos = StyleSheet.create({
   },
 
   fraca: {
-     backgroundColor: "#FF6B6B" 
-    },
+    backgroundColor: "#FF6B6B",
+  },
 
   media: { 
-    backgroundColor: "#F59E0B" 
+    backgroundColor: "#F59E0B",
   },
 
   forte: { 
-    backgroundColor: "#10B981" 
+    backgroundColor: "#10B981",
   },
 
   muitoForte: { 
-    backgroundColor: "#34D399" 
+    backgroundColor: "#34D399",
   },
 
   titulo: { 
-    color: CORES.text, fontSize: 13, fontWeight: "700", marginBottom: 4 
+    color: CORES.text, 
+    fontSize: 13, 
+    fontWeight: "700", 
+    marginBottom: 4 
   },
 
   linha: { 
-    color: CORES.text, fontSize: 12, lineHeight: 18, marginBottom: 2 
+    color: CORES.text, 
+    fontSize: 12, 
+    lineHeight: 18, 
+    marginBottom: 2 
   },
 
   ok: {
-   color: CORES.success, fontWeight: "700" 
+    color: CORES.success, 
+    fontWeight: "700",
   },
 
   naoOk: { 
-    color: CORES.danger, fontWeight: "700" 
+    color: CORES.danger, 
+    fontWeight: "700",
   },
 });

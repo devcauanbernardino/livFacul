@@ -1,4 +1,4 @@
-// components/parallax-scroll-view.tsx (ou onde você usa)
+// components/parallax-scroll-view.tsx
 import React, { type PropsWithChildren, type ReactElement } from "react";
 import { StyleSheet, useColorScheme } from "react-native";
 import Animated, {
@@ -22,10 +22,8 @@ export default function ParallaxScrollView({
   headerImage,
   headerBackgroundColor,
 }: Props) {
-  // usa o hook nativo do RN
   const colorScheme = useColorScheme() ?? "light";
 
-  // bg padrão do app (ajuste se tiver suas cores globais)
   const appBg = colorScheme === "dark" ? "#121018" : "#FFFFFF";
 
   const scrollRef = useAnimatedRef<Animated.ScrollView>();

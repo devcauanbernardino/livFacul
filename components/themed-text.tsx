@@ -15,7 +15,7 @@ export function ThemedText({
   type = "default",
   ...rest
 }: ThemedTextProps) {
-  // usa a cor passada, se não tiver usa o fallback padrão
+  // usa a cor passada, se não tiver usa a padrão
   const color = lightColor || darkColor || "#E6E6EA";
 
   return (

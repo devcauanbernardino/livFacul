@@ -1,4 +1,4 @@
-import { Platform } from "react-native";
+// constants/theme/colors.ts
 
 const corPrincipalClara = "#0a7ea4";
 const corPrincipalEscura = "#fff";
@@ -22,20 +22,10 @@ export const CORES = {
   },
 };
 
-export const FONTES = Platform.select({
-  default: {
-    semSerifa: "normal",
-    serifa: "serif",
-    arredondada: "normal",
-    monoespacada: "monospace",
-  },
-  web: {
-    semSerifa:
-      "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
-    serifa: "Georgia, 'Times New Roman', serif",
-    arredondada:
-      "'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif",
-    monoespacada:
-      "SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
-  },
-});
+// 🔥 Versão simplificada — somente Android, sem Platform, sem Web
+export const FONTES = {
+  semSerifa: "normal",
+  serifa: "serif",
+  arredondada: "normal",
+  monoespacada: "monospace",
+};

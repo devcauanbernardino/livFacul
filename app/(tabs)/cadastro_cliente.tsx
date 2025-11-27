@@ -1,4 +1,4 @@
-// app/telas/TelaCadastro.tsx
+// app/(tabs)/cadastro_cliente.tsx
 import * as FileSystem from "expo-file-system/legacy";
 import { useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
@@ -28,7 +28,7 @@ import { supabase } from "@/lib/supabase";
 import { uploadAvatarToSupabase } from "@/lib/uploadAvatar";
 import { useAuth } from "contexto/AuthContext";
 
-export default function TelaCadastro() {
+export default function CadastroCliente() {
   const navegar = useRouter();
   const { loginDireto } = useAuth();
 
@@ -55,7 +55,7 @@ export default function TelaCadastro() {
     confirmarSenha: false,
   });
 
-  // limpa possíveis imagens antigas no device
+  // limpa arquivos temporários do avatar
   useEffect(() => {
     const paths = [
       FileSystem.documentDirectory + "profile.jpg",
@@ -70,15 +70,23 @@ export default function TelaCadastro() {
     })();
   }, []);
 
-  // animação
+  // animação de entrada
   const animacao = useRef(new Animated.Value(0)).current;
   useEffect(() => {
-    Animated.timing(animacao, { toValue: 1, duration: 600, useNativeDriver: true }).start();
+    Animated.timing(animacao, {
+      toValue: 1,
+      duration: 600,
+      useNativeDriver: true,
+    }).start();
   }, [animacao]);
-  const deslocamentoY = animacao.interpolate({ inputRange: [0, 1], outputRange: [18, 0] });
+
+  const deslocamentoY = animacao.interpolate({
+    inputRange: [0, 1],
+    outputRange: [18, 0],
+  });
   const opacidade = animacao;
 
-  // validação
+  // validações
   const nomeValido = nome.trim().length >= 3;
   const cpfValido = validarCPF(cpf);
   const dataValida = validarDataBR(dataNasc);
@@ -87,9 +95,14 @@ export default function TelaCadastro() {
   const senhaBoa = senhaValida(infoSenha);
   const senhasBatendo = senha === confirmarSenha && confirmarSenha.length > 0;
 
-  const tudoValido = nomeValido && cpfValido && dataValida && emailValido && senhaBoa && senhasBatendo;
+  const tudoValido =
+    nomeValido &&
+    cpfValido &&
+    dataValida &&
+    emailValido &&
+    senhaBoa &&
+    senhasBatendo;
 
-  // submit
   async function enviarCadastro() {
     if (!tudoValido) {
       Alert.alert("Dados incompletos", "Verifique os campos destacados.");
@@ -99,47 +112,46 @@ export default function TelaCadastro() {
     try {
       setEnviando(true);
 
-      // DD/MM/AAAA -> AAAA-MM-DD
       const [dia, mes, ano] = dataNasc.split("/");
       const dataISO = `${ano}-${mes}-${dia}`;
-
-      // 1) cria usuário no Auth
       const emailNorm = email.toLowerCase().trim();
+
+      // 1) Cria usuário no Auth
       const { data: signData, error: signErr } = await supabase.auth.signUp({
         email: emailNorm,
         password: senha,
         options: { data: { name: nome.trim() } },
       });
-      if (signErr || !signData.user) {
-        Alert.alert("Erro ao criar conta", signErr?.message || "Tente novamente.");
+
+      if (signErr || !signData?.user) {
+        Alert.alert(
+          "Erro ao criar conta",
+          signErr?.message || "Tente novamente."
+        );
         return;
       }
+
       const userId = signData.user.id;
 
-      // 2) garante sessão (se o projeto exige confirmação por e-mail, signUp pode não retornar session)
+      // garante sessão (caso o projeto não crie automaticamente)
       if (!signData.session) {
-        const { data: loginData, error: loginErr } = await supabase.auth.signInWithPassword({
+        await supabase.auth.signInWithPassword({
           email: emailNorm,
           password: senha,
         });
-        if (loginErr || !loginData.session) {
-          console.warn("Sem sessão após signUp:", loginErr?.message);
-          // Você pode permitir seguir sem upload (policy pública) ou pular upload agora
-        }
       }
 
-      // 3) upload da foto (opcional) — sem sombrear variável
+      // 2) Avatar
       let avatarPublicUrl: string | null = null;
       if (fotoPerfil) {
         try {
           avatarPublicUrl = await uploadAvatarToSupabase(fotoPerfil, userId);
-          console.log("✅ avatarPublicUrl:", avatarPublicUrl);
-        } catch (e: any) {
-          console.warn("Falha ao subir avatar:", e?.message || e);
+        } catch (e) {
+          console.warn("Erro ao subir avatar:", e);
         }
       }
 
-      // 4) upsert no perfil (tabela "usuarios")
+      // 3) Perfil na tabela `usuarios`
       const perfilPayload = {
         id: userId,
         nome: nome.trim(),
@@ -154,34 +166,49 @@ export default function TelaCadastro() {
       const { data, error } = await supabase
         .from("usuarios")
         .upsert(perfilPayload, { onConflict: "id" })
-        .select("id, nome, email, avatar_url, progresso_leitor, tipo_usuario, divisao")
+        .select(
+          "id, nome, email, avatar_url, progresso_leitor, tipo_usuario, divisao"
+        )
         .single();
 
       if (error || !data) {
-        Alert.alert("Erro ao salvar perfil", error?.message || "Tente novamente.");
+        Alert.alert(
+          "Erro ao salvar perfil",
+          error?.message || "Tente novamente."
+        );
         return;
       }
 
-      // 5) atualiza contexto – prioriza a URL recém-gerada e força cache-bust
       const finalUrl = avatarPublicUrl || data.avatar_url || null;
-      const bust = finalUrl ? `${finalUrl}${finalUrl.includes("?") ? "&" : "?"}cb=${Date.now()}` : null;
+      const bust = finalUrl
+        ? `${finalUrl}${finalUrl.includes("?") ? "&" : "?"}cb=${Date.now()}`
+        : null;
 
+      // 4) Atualiza contexto (logar dentro do app)
       loginDireto({
         id: data.id,
         nome: data.nome,
         email: data.email,
         tipoUsuario: data.tipo_usuario ?? "leitor",
-        progressoLeitor: typeof data.progresso_leitor === "number" ? data.progresso_leitor : 0,
+        progressoLeitor:
+          typeof data.progresso_leitor === "number"
+            ? data.progresso_leitor
+            : 0,
         divisao: data.divisao ?? "Iniciante",
         avatarUrlRemota: bust,
         avatarLocal: fotoPerfil ? { uri: fotoPerfil } : undefined,
       });
 
       Alert.alert("Conta criada!", "Cadastro feito. Você já está logado 😌");
+
+      // ✅ REGRA NOVA: independente do tipo, vai para o INDEX
       navegar.replace("/");
-    } catch (e: any) {
-      console.log("Erro inesperado:", e);
-      Alert.alert("Erro", "Não foi possível concluir seu cadastro agora.");
+    } catch (e) {
+      console.error(e);
+      Alert.alert(
+        "Erro",
+        "Não foi possível concluir seu cadastro agora. Tente novamente."
+      );
     } finally {
       setEnviando(false);
     }
@@ -190,11 +217,25 @@ export default function TelaCadastro() {
   return (
     <SafeAreaView style={estilos.areaSegura} edges={["top", "left", "right"]}>
       <KeyboardAvoidingView behavior={undefined} style={{ flex: 1 }}>
-        <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 }} keyboardShouldPersistTaps="handled">
-          <Animated.View style={[estilos.container, { opacity: opacidade, transform: [{ translateY: deslocamentoY }] }]}>
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 }}
+          keyboardShouldPersistTaps="handled"
+        >
+          <Animated.View
+            style={[
+              estilos.container,
+              { opacity: opacidade, transform: [{ translateY: deslocamentoY }] },
+            ]}
+          >
             <View style={estilos.cabecalho}>
-              <Image source={require("../../assets/images/lua.png")} style={estilos.logo} resizeMode="contain" />
-              <Text style={estilos.subtituloCabecalho}>Cadastre-se para anunciar e comprar livros</Text>
+              <Image
+                source={require("../../assets/images/lua.png")}
+                style={estilos.logo}
+                resizeMode="contain"
+              />
+              <Text style={estilos.subtituloCabecalho}>
+                Cadastre-se para anunciar e comprar livros
+              </Text>
             </View>
 
             <View style={estilos.blocoFoto}>
@@ -205,7 +246,9 @@ export default function TelaCadastro() {
                 filename="profile-draft.jpg"
                 autoLoadPersisted={false}
               />
-              <Text style={estilos.legendaFoto}>(opcional) Escolha uma foto de perfil</Text>
+              <Text style={estilos.legendaFoto}>
+                (opcional) Escolha uma foto de perfil
+              </Text>
             </View>
 
             <CampoTextoPadrao
@@ -214,7 +257,11 @@ export default function TelaCadastro() {
               aoAlterarTexto={setNome}
               aoPerderFoco={() => setToque((s) => ({ ...s, nome: true }))}
               placeholder="Seu nome completo"
-              erro={toque.nome && !nomeValido ? "Informe ao menos 3 caracteres" : null}
+              erro={
+                toque.nome && !nomeValido
+                  ? "Informe ao menos 3 caracteres"
+                  : null
+              }
             />
 
             <CampoTextoPadrao
@@ -234,7 +281,11 @@ export default function TelaCadastro() {
               aoPerderFoco={() => setToque((s) => ({ ...s, dataNasc: true }))}
               placeholder="DD/MM/AAAA"
               tipoTeclado="numeric"
-              erro={toque.dataNasc && !dataValida ? "Data inválida ou futura" : null}
+              erro={
+                toque.dataNasc && !dataValida
+                  ? "Data inválida ou futura"
+                  : null
+              }
             />
 
             <CampoTextoPadrao
@@ -259,10 +310,15 @@ export default function TelaCadastro() {
                 setToque((s) => ({ ...s, senha: true }));
                 setSenhaFocada(false);
               }}
-              erro={null}
             />
-            <TouchableOpacity onPress={() => setMostrarSenha((v) => !v)} style={estilos.toggleSenha}>
-              <Text style={estilos.toggleSenhaTexto}>{mostrarSenha ? "Ocultar senha 👁️‍🗨️" : "Mostrar senha 👁️"}</Text>
+
+            <TouchableOpacity
+              onPress={() => setMostrarSenha((v) => !v)}
+              style={estilos.toggleSenha}
+            >
+              <Text style={estilos.toggleSenhaTexto}>
+                {mostrarSenha ? "Ocultar senha 👁️‍🗨️" : "Mostrar senha 👁️"}
+              </Text>
             </TouchableOpacity>
 
             {senhaFocada && <ForcaSenha pwd={infoSenha} />}
@@ -273,49 +329,95 @@ export default function TelaCadastro() {
               aoAlterarTexto={setConfirmarSenha}
               placeholder="Repita a senha"
               senhaOculta={!mostrarConfirmar}
-              aoPerderFoco={() => setToque((s) => ({ ...s, confirmarSenha: true }))}
-              erro={toque.confirmarSenha && !senhasBatendo ? "As senhas não coincidem" : null}
+              aoPerderFoco={() =>
+                setToque((s) => ({ ...s, confirmarSenha: true }))
+              }
+              erro={
+                toque.confirmarSenha && !senhasBatendo
+                  ? "As senhas não coincidem"
+                  : null
+              }
             />
-            <TouchableOpacity onPress={() => setMostrarConfirmar((v) => !v)} style={estilos.toggleSenha}>
+
+            <TouchableOpacity
+              onPress={() => setMostrarConfirmar((v) => !v)}
+              style={estilos.toggleSenha}
+            >
               <Text style={estilos.toggleSenhaTexto}>
-                {mostrarConfirmar ? "Ocultar confirmação 👁️‍🗨️" : "Mostrar confirmação 👁️"}
+                {mostrarConfirmar
+                  ? "Ocultar confirmação 👁️‍🗨️"
+                  : "Mostrar confirmação 👁️"}
               </Text>
             </TouchableOpacity>
 
-            <Text style={estilos.rotuloTipoConta}>Você quer se cadastrar como:</Text>
+            <Text style={estilos.rotuloTipoConta}>
+              Você quer se cadastrar como:
+            </Text>
 
             <View style={estilos.linhaTipoConta}>
               <TouchableOpacity
-                style={[estilos.opcaoTipoConta, tipoUsuario === "leitor" && estilos.opcaoAtiva]}
+                style={[
+                  estilos.opcaoTipoConta,
+                  tipoUsuario === "leitor" && estilos.opcaoAtiva,
+                ]}
                 activeOpacity={0.9}
                 onPress={() => setTipoUsuario("leitor")}
               >
-                <Text style={[estilos.textoTipoConta, tipoUsuario === "leitor" && estilos.textoTipoAtivo]}>Leitor 👓</Text>
-                <Text style={estilos.subTipoConta}>Comprar e ler e-books</Text>
+                <Text
+                  style={[
+                    estilos.textoTipoConta,
+                    tipoUsuario === "leitor" && estilos.textoTipoAtivo,
+                  ]}
+                >
+                  Leitor 👓
+                </Text>
+                <Text style={estilos.subTipoConta}>
+                  Comprar e ler e-books
+                </Text>
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={[estilos.opcaoTipoConta, tipoUsuario === "autor" && estilos.opcaoAtiva]}
+                style={[
+                  estilos.opcaoTipoConta,
+                  tipoUsuario === "autor" && estilos.opcaoAtiva,
+                ]}
                 activeOpacity={0.9}
                 onPress={() => setTipoUsuario("autor")}
               >
-                <Text style={[estilos.textoTipoConta, tipoUsuario === "autor" && estilos.textoTipoAtivo]}>Autor ✍️</Text>
-                <Text style={estilos.subTipoConta}>Publicar meus próprios livros</Text>
+                <Text
+                  style={[
+                    estilos.textoTipoConta,
+                    tipoUsuario === "autor" && estilos.textoTipoAtivo,
+                  ]}
+                >
+                  Autor ✍️
+                </Text>
+                <Text style={estilos.subTipoConta}>
+                  Publicar meus próprios livros
+                </Text>
               </TouchableOpacity>
             </View>
 
             <TouchableOpacity
-              style={[estilos.botaoCriar, (!tudoValido || enviando) && estilos.botaoDesativado]}
+              style={[
+                estilos.botaoCriar,
+                (!tudoValido || enviando) && estilos.botaoDesativado,
+              ]}
               onPress={enviarCadastro}
               disabled={!tudoValido || enviando}
               activeOpacity={0.9}
             >
-              <Text style={estilos.textoBotaoCriar}>{enviando ? "Enviando..." : "Criar conta"}</Text>
+              <Text style={estilos.textoBotaoCriar}>
+                {enviando ? "Enviando..." : "Criar conta"}
+              </Text>
             </TouchableOpacity>
 
             <View style={estilos.blocoLoginLink}>
               <Text style={{ color: CORES.sub }}>Já tem conta?</Text>
-              <TouchableOpacity onPress={() => navegar.replace("/login")} disabled={enviando}>
+              <TouchableOpacity
+                onPress={() => navegar.replace("/login")}
+                disabled={enviando}
+              >
                 <Text style={estilos.linkEntrar}>Entrar</Text>
               </TouchableOpacity>
             </View>
@@ -328,13 +430,30 @@ export default function TelaCadastro() {
 
 const estilos = StyleSheet.create({
   areaSegura: { flex: 1, backgroundColor: CORES.bg },
-  container: { flex: 1, paddingHorizontal: 24, justifyContent: "center", paddingVertical: 40 },
+  container: {
+    flex: 1,
+    paddingHorizontal: 24,
+    justifyContent: "center",
+    paddingVertical: 40,
+  },
   cabecalho: { alignItems: "center", marginBottom: 24 },
   logo: { width: 90, height: 90, marginBottom: 12 },
-  subtituloCabecalho: { color: CORES.sub, textAlign: "center", fontSize: 14, lineHeight: 20, maxWidth: 260 },
+  subtituloCabecalho: {
+    color: CORES.sub,
+    textAlign: "center",
+    fontSize: 14,
+    lineHeight: 20,
+    maxWidth: 260,
+  },
   blocoFoto: { marginBottom: 24, alignItems: "center" },
   legendaFoto: { marginTop: 8, fontSize: 12, color: CORES.sub },
-  rotuloTipoConta: { color: CORES.text, fontSize: 14, fontWeight: "600", marginTop: 12, marginBottom: 8 },
+  rotuloTipoConta: {
+    color: CORES.text,
+    fontSize: 14,
+    fontWeight: "600",
+    marginTop: 12,
+    marginBottom: 8,
+  },
   linhaTipoConta: { flexDirection: "column", gap: 12 },
   opcaoTipoConta: {
     borderWidth: 1,
@@ -344,11 +463,20 @@ const estilos = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 14,
   },
-  opcaoAtiva: { borderColor: CORES.accent, backgroundColor: "rgba(124,58,237,0.18)" },
+  opcaoAtiva: {
+    borderColor: CORES.accent,
+    backgroundColor: "rgba(124,58,237,0.18)",
+  },
   textoTipoConta: { color: CORES.text, fontSize: 15, fontWeight: "600" },
   textoTipoAtivo: { color: CORES.accent },
   subTipoConta: { color: CORES.sub, fontSize: 12, marginTop: 4 },
-  botaoCriar: { marginTop: 24, backgroundColor: CORES.button, paddingVertical: 14, borderRadius: 12, alignItems: "center" },
+  botaoCriar: {
+    marginTop: 24,
+    backgroundColor: CORES.button,
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: "center",
+  },
   botaoDesativado: { opacity: 0.5 },
   textoBotaoCriar: { color: "white", fontWeight: "700", fontSize: 16 },
   blocoLoginLink: { marginTop: 16, alignItems: "center" },

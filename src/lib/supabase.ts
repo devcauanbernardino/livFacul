@@ -1,3 +1,4 @@
+// src/lib/supabase.ts
 import { createClient } from "@supabase/supabase-js";
 import Constants from "expo-constants";
 
@@ -22,11 +23,11 @@ if (!supabaseUrl || !supabaseAnonKey) {
   );
 }
 
-// Cria o client do Supabase
+// 🔴 IMPORTANTE: não persistir sessão no dispositivo
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
-    persistSession: true,
-    autoRefreshToken: true,
+    persistSession: false,      // não salva sessão no storage do app
+    autoRefreshToken: false,    // não tenta renovar token em background
     detectSessionInUrl: false,
   },
 });

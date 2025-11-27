@@ -24,14 +24,14 @@ export default function ProfileImagePicker({
   const [tick, setTick] = useState(0);
   const placeholder = require("../assets/images/icon.png");
 
-  // ✅ usa FileSystem corretamente
   const persistentPath = useMemo(() => {
-  const baseDir: string =
-    ((FileSystem as any).documentDirectory ??
-      (FileSystem as any).cacheDirectory ??
-      "") + "ProfileImages/";
-  return baseDir + filename;
-}, [filename]);
+    const baseDir: string =
+      ((FileSystem as any).documentDirectory ??
+        (FileSystem as any).cacheDirectory ??
+        "") + "ProfileImages/";
+
+    return baseDir + filename;
+  }, [filename]);
 
   useEffect(() => {
     (async () => {
@@ -53,8 +53,8 @@ export default function ProfileImagePicker({
       if (value.startsWith("file://")) {
         const baseDir: string =
           ((FileSystem as any).documentDirectory ??
-           (FileSystem as any).cacheDirectory ??
-        "");
+            (FileSystem as any).cacheDirectory ??
+            "");
 
         if (value.startsWith(baseDir)) {
           const info = await FileSystem.getInfoAsync(value);
@@ -64,6 +64,7 @@ export default function ProfileImagePicker({
           const dest = persistentPath.toLowerCase().endsWith(`.${ext}`)
             ? persistentPath
             : persistentPath.replace(/\.[a-z0-9]+$/i, `.${ext}`);
+
           await safeCopy(value, dest);
           setUri(dest);
           onChange?.(dest);
@@ -84,10 +85,10 @@ export default function ProfileImagePicker({
   async function safeCopy(from: string, to: string) {
     const old = await FileSystem.getInfoAsync(to);
     if (old.exists) await FileSystem.deleteAsync(to, { idempotent: true });
+
     await FileSystem.copyAsync({ from, to });
   }
 
-  
   const IMAGE_ONLY = ["images"] as ImagePicker.MediaType[];
 
   async function requestPermissions() {
@@ -103,7 +104,7 @@ export default function ProfileImagePicker({
     }
 
     if (cam.status !== "granted") {
-      console.log("Permissão da câmera negada (usará só galeria)");
+      console.log("Permissão da câmera negada (somente galeria disponível)");
     }
 
     return true;

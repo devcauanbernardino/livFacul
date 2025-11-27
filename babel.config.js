@@ -3,7 +3,6 @@ module.exports = function (api) {
   return {
     presets: ["babel-preset-expo"],
     plugins: [
-      // Remova "expo-router/babel" se estiver aí (SDK 50+)
       ["module-resolver", {
         root: ["./"],
         alias: {

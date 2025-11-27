@@ -1,11 +1,19 @@
-// app/_layout.tsx
 import { Stack } from "expo-router";
 import { AuthProvider } from "../contexto/AuthContext";
+import { CarrinhoProvider } from "../contexto/CarrinhoContext";
 
 export default function RootLayout() {
   return (
     <AuthProvider>
-      <Stack screenOptions={{ headerShown: false }} />
+      {/* O CarrinhoProvider PRECISA estar aqui para funcionar */}
+      <CarrinhoProvider> 
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="detalhesLivro" options={{ headerShown: false }} />
+          <Stack.Screen name="carrinho" options={{ headerShown: false }} />
+          <Stack.Screen name="finalizarCompra" options={{ headerShown: false }} />
+        </Stack>
+      </CarrinhoProvider>
     </AuthProvider>
   );
 }

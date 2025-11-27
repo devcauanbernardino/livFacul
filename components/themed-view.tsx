@@ -13,7 +13,7 @@ export function ThemedView({
   darkColor,
   ...otherProps
 }: ThemedViewProps) {
-  // Cor padrão (fallback)
+  // Cor padrão de fallback
   const backgroundColor = lightColor || darkColor || "#121018";
 
   return <View style={[{ backgroundColor }, style]} {...otherProps} />;

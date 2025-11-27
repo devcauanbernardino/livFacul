@@ -32,7 +32,6 @@ export function Collapsible({
         onPress={() => setIsOpen((value) => !value)}
         activeOpacity={0.8}
       >
-        {/* Ícone simples substituindo IconSymbol */}
         <ThemedText
           style={{
             fontSize: 18,

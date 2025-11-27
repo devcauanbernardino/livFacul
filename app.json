@@ -2,21 +2,18 @@
   "expo": {
     "name": "Livraria",
     "slug": "Livraria",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/lua.png",
     "scheme": "livraria",
     "userInterfaceStyle": "light",
-    "splash": {
-      "image": "./assets/images/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#121018"
-    },
     "android": {
       "package": "com.seuapp.livraria",
+      "versionCode": 2,
       "permissions": [
-        "CAMERA",
-        "READ_MEDIA_IMAGES"
+        "android.permission.CAMERA",
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.RECORD_AUDIO"
       ]
     },
     "plugins": [
@@ -39,7 +36,12 @@
     ],
     "extra": {
       "SUPABASE_URL": "https://esgdonrrcixebouyjvbp.supabase.co",
-      "SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVzZ2RvbnJyY2l4ZWJvdXlqdmJwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MjM2NzYwNiwiZXhwIjoyMDc3OTQzNjA2fQ.ilJO9XOG7NpPsQMOFQk0GIDZlZtpVOkH8tROFJv7NU4"
-    }
+      "SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVzZ2RvbnJyY2l4ZWJvdXlqdmJwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIzNjc2MDYsImV4cCI6MjA3Nzk0MzYwNn0.1y8zH-mYpeQjaCfm6hHkxZha7bNUyjmvN9Qyuj8Jygo",
+      "router": {},
+      "eas": {
+        "projectId": "5a86ed11-f139-4335-99d9-3f15adc41599"
+      }
+    },
+    "owner": "thiagocfrt03"
   }
 }

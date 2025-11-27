@@ -1,4 +1,3 @@
-// app/(tabs)/login.tsx
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -28,7 +27,7 @@ const CORES = {
 };
 
 export default function TelaLogin() {
-  const navegar = useRouter();
+  const router = useRouter();
   const { login } = useAuth();
 
   const [email, setEmail] = useState("");
@@ -43,8 +42,20 @@ export default function TelaLogin() {
 
     try {
       setCarregando(true);
-      await login(email, senha);
-      navegar.replace("/");
+
+      const usuarioLogado = await login(email, senha);
+
+      if (!usuarioLogado) {
+        Alert.alert("Erro", "Não foi possível fazer login.");
+        return;
+      }
+
+      // ✅ CORREÇÃO DEFINITIVA:
+      // Apaguei o "if (autor) { ... }" que existia aqui.
+      // Agora, independente do tipo, o app vai para a raiz (index).
+      
+      router.replace("/");
+
     } catch (err: any) {
       console.log("Erro ao tentar login:", err);
       Alert.alert("Erro", err.message || "E-mail ou senha inválidos.");
@@ -54,7 +65,7 @@ export default function TelaLogin() {
   }
 
   function irParaCadastro() {
-    navegar.push("/cadastro_cliente");
+    router.push("/(tabs)/cadastro_cliente");
   }
 
   return (
@@ -62,10 +73,9 @@ export default function TelaLogin() {
       <StatusBar barStyle="light-content" />
       <KeyboardAvoidingView style={{ flex: 1 }}>
         <View style={estilos.container}>
-          {/* Cabeçalho com ícone e textos */}
           <View style={estilos.cabecalho}>
             <Image
-              source={require("../../assets/images/lua.png")} // ✅ caminho corrigido
+              source={require("../../assets/images/lua.png")}
               style={estilos.icone}
               resizeMode="contain"
             />
@@ -75,7 +85,6 @@ export default function TelaLogin() {
             </Text>
           </View>
 
-          {/* Formulário */}
           <View style={estilos.formulario}>
             <Text style={estilos.rotulo}>E-mail</Text>
             <TextInput
@@ -115,20 +124,19 @@ export default function TelaLogin() {
               activeOpacity={0.9}
               disabled={carregando}
             >
-              <Text style={estilos.textoBotaoSecundario}>
-                Cadastrar-se
-              </Text>
+              <Text style={estilos.textoBotaoSecundario}>Cadastrar-se</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               disabled={carregando}
               onPress={() =>
-                Alert.alert("Em breve ✉", "Recuperação de senha ainda não implementada.")
+                Alert.alert(
+                  "Em breve ✉",
+                  "Recuperação de senha ainda não implementada."
+                )
               }
             >
-              <Text style={estilos.linkEsqueciSenha}>
-                Esqueci minha senha
-              </Text>
+              <Text style={estilos.linkEsqueciSenha}>Esqueci minha senha</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -139,10 +147,21 @@ export default function TelaLogin() {
 
 const estilos = StyleSheet.create({
   areaSegura: { flex: 1, backgroundColor: CORES.bg },
-  container: { flex: 1, paddingHorizontal: 24, justifyContent: "center", alignItems: "center" },
+  container: {
+    flex: 1,
+    paddingHorizontal: 24,
+    justifyContent: "center",
+    alignItems: "center",
+  },
   cabecalho: { alignItems: "center", marginBottom: 32 },
   icone: { width: 100, height: 100, marginBottom: 8 },
-  titulo: { color: CORES.title, fontSize: 30, fontWeight: "800", textAlign: "center", marginBottom: 4 },
+  titulo: {
+    color: CORES.title,
+    fontSize: 30,
+    fontWeight: "800",
+    textAlign: "center",
+    marginBottom: 4,
+  },
   subtitulo: { color: CORES.sub, textAlign: "center", fontSize: 15 },
   formulario: { width: "100%", marginTop: 16 },
   rotulo: { color: CORES.text, marginBottom: 6, fontSize: 13, opacity: 0.9 },
@@ -177,6 +196,14 @@ const estilos = StyleSheet.create({
     borderRadius: 14,
     alignItems: "center",
   },
-  textoBotaoSecundario: { color: CORES.accent, fontWeight: "600", fontSize: 15 },
-  linkEsqueciSenha: { color: CORES.accent, textAlign: "center", marginTop: 14 },
+  textoBotaoSecundario: {
+    color: CORES.accent,
+    fontWeight: "600",
+    fontSize: 15,
+  },
+  linkEsqueciSenha: {
+    color: CORES.accent,
+    textAlign: "center",
+    marginTop: 14,
+  },
 });
