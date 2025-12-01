@@ -12,6 +12,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Platform
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -216,7 +217,10 @@ export default function CadastroCliente() {
 
   return (
     <SafeAreaView style={estilos.areaSegura} edges={["top", "left", "right"]}>
-      <KeyboardAvoidingView behavior={undefined} style={{ flex: 1 }}>
+      <KeyboardAvoidingView
+              style={{ flex: 1 }}
+              behavior={Platform.OS === "ios" ? "padding" : "height"}
+            >
         <ScrollView
           contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 }}
           keyboardShouldPersistTaps="handled"
