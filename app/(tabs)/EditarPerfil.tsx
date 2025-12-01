@@ -44,28 +44,31 @@ export default function TelaEditarPerfil() {
   }
 
   // estados locais editáveis baseados no usuário logado
-  const [nomeEditado, setNomeEditado] = useState<string>(
-    usuario.nome || ""
-  );
+  const [nomeEditado, setNomeEditado] = useState<string>(usuario.nome || "");
 
   const [fotoEditada, setFotoEditada] = useState<any>(
     usuario.avatarLocal || null
   );
 
+  const nomeMudou = nomeEditado.trim() !== usuario.nome;
+  const fotoMudou = fotoEditada?.uri !== usuario.avatarLocal?.uri;
+
   // salvar alterações
   function salvar() {
-    // valida nome
-    if (!nomeEditado.trim()) {
-      Alert.alert("Nome inválido", "Seu nome não pode estar vazio.");
+    // segurança extra: se por algum motivo o contexto sumiu
+    if (!usuario) {
+      Alert.alert("Erro", "Usuário não encontrado. Faça login novamente.");
       return;
     }
 
-    // segurança extra: se por algum motivo o contexto sumiu
-    if (!usuario) {
-      Alert.alert(
-        "Erro",
-        "Usuário não encontrado. Faça login novamente."
-      );
+    // Se nada mudou, apenas volta para a tela anterior.
+    if (!nomeMudou && !fotoMudou) {
+      router.back();
+      return;
+    }
+
+    if (!nomeEditado.trim()) {
+      Alert.alert("Nome inválido", "Seu nome não pode estar vazio.");
       return;
     }
 
@@ -79,13 +82,28 @@ export default function TelaEditarPerfil() {
     router.back();
   }
 
+  // Função para o botão de voltar
+  const handleVoltar = () => {
+    // Adiciona uma verificação para garantir que o usuário não é nulo.
+    // Embora improvável de acontecer, isso satisfaz o TypeScript.
+    if (!usuario) {
+      router.back();
+      return;
+    }
+    // Reseta os estados para os valores originais do contexto
+    setNomeEditado(usuario.nome || "");
+    setFotoEditada(usuario.avatarLocal || null);
+    // Navega de volta
+    router.back();
+  }
+
   return (
     <SafeAreaView style={estilos.areaSegura}>
-      <View style={estilos.container}>
+      <View style={estilos.container2}>
         {/* TOPO: botão voltar + título */}
         <View style={estilos.linhaTopo}>
           <TouchableOpacity
-            onPress={() => router.back()}
+            onPress={handleVoltar}
             style={estilos.botaoVoltar}
             activeOpacity={0.8}
           >
@@ -126,9 +144,7 @@ export default function TelaEditarPerfil() {
               style={[
                 estilos.barraProgressoPreenchida,
                 {
-                  width: `${Math.round(
-                    (usuario.progressoLeitor || 0) * 100
-                  )}%`,
+                  width: `${Math.round((usuario.progressoLeitor || 0) * 100)}%`,
                 } as ViewStyle,
               ]}
             />
@@ -136,9 +152,7 @@ export default function TelaEditarPerfil() {
 
           <Text style={estilos.textoProgresso}>
             {(usuario.progressoLeitor || 0) * 100 >= 1
-              ? `${Math.round(
-                  (usuario.progressoLeitor || 0) * 100
-                )}%`
+              ? `${Math.round((usuario.progressoLeitor || 0) * 100)}%`
               : "0%"}{" "}
             concluído
           </Text>
@@ -150,9 +164,7 @@ export default function TelaEditarPerfil() {
           activeOpacity={0.9}
           onPress={salvar}
         >
-          <Text style={estilos.textoBotaoPrimario}>
-            Salvar alterações
-          </Text>
+          <Text style={estilos.textoBotaoPrimario}>Salvar alterações</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -168,8 +180,14 @@ const estilos = StyleSheet.create({
 
   container: {
     flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  container2: {
+    flex: 1,
     paddingHorizontal: 24,
-    paddingVertical: 24,
+    marginTop: 50,
   },
 
   linhaTopo: {
@@ -258,6 +276,7 @@ const estilos = StyleSheet.create({
     color: "white",
     fontWeight: "700",
     fontSize: 16,
+    padding: 5,
   },
 
   avisoTexto: {

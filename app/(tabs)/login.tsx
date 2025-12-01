@@ -4,6 +4,7 @@ import {
   Alert,
   Image,
   KeyboardAvoidingView,
+  Platform,
   SafeAreaView,
   StatusBar,
   StyleSheet,
@@ -53,9 +54,8 @@ export default function TelaLogin() {
       // ✅ CORREÇÃO DEFINITIVA:
       // Apaguei o "if (autor) { ... }" que existia aqui.
       // Agora, independente do tipo, o app vai para a raiz (index).
-      
-      router.replace("/");
 
+      router.replace("/");
     } catch (err: any) {
       console.log("Erro ao tentar login:", err);
       Alert.alert("Erro", err.message || "E-mail ou senha inválidos.");
@@ -71,7 +71,10 @@ export default function TelaLogin() {
   return (
     <SafeAreaView style={estilos.areaSegura}>
       <StatusBar barStyle="light-content" />
-      <KeyboardAvoidingView style={{ flex: 1 }}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
         <View style={estilos.container}>
           <View style={estilos.cabecalho}>
             <Image
