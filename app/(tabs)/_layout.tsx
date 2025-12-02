@@ -13,6 +13,7 @@ export default function TabsLayout() {
     >
       <Tabs.Screen name="index" />
       <Tabs.Screen name="areaAutor" />
+      <Tabs.Screen name="clube" />
       <Tabs.Screen name="cadastroLivro" />
       <Tabs.Screen name="cadastro_cliente" />
       <Tabs.Screen name="login" />
